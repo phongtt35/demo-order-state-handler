@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Management</title>
+</head>
+<body>
+<h1>Order Management</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Order ID</th>
+        <th>State</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="order : ${orders}">
+        <td th:text="${order.id}"></td>
+        <td th:text="${order.state}"></td>
+        <td>
+            <form th:each="action : ${orderActions[order.id]}" th:action="@{/orders/{orderId}/{action}(orderId=${order.id}, action=${action})}" method="post">
+                <button type="submit" th:text="${#strings.capitalize(action)}"></button>
+            </form>
+            <form th:action="@{/orders/{orderId}/history(orderId=${order.id})}" method="get">
+                <button type="submit">View History</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
