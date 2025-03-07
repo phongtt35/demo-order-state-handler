@@ -19,10 +19,10 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderState state;
 
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
 
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
     }
 }

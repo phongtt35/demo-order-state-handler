@@ -76,6 +76,12 @@ public class OrderController {
         return "redirect:/orders";
     }
 
+    @PostMapping("/{orderId}/ghost")
+    public String ghostOrder(@PathVariable Long orderId) {
+        orderService.ghostOrder(orderId);
+        return "redirect:/orders";
+    }
+
     @PostMapping("/{orderId}/reportLost")
     public String reportLostOrder(@PathVariable Long orderId) {
         orderService.reportLostOrder(orderId);
@@ -90,10 +96,11 @@ public class OrderController {
 
     private List<String> getAvailableActions(OrderState state) {
         return switch (state) {
-            case CHO_XAC_NHAN -> List.of("confirm", "cancel");
+            case CHO_XAC_NHAN -> List.of("confirm", "hold", "cancel");
             case DA_XAC_NHAN, CHO_NHAP_HANG -> List.of("prepare", "cancel");
             case DANG_CHUAN_BI -> List.of("ship", "cancel");
-            case DANG_GIAO_HANG -> List.of("complete", "cancel", "return", "reportLost");
+            case DANG_GIAO_HANG -> List.of("complete", "ghost");
+            case GIAO_THAT_BAI -> List.of("reportLost", "return");
             default -> List.of();
         };
     }

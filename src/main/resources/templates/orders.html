@@ -9,6 +9,7 @@
     <thead>
     <tr>
         <th>Order ID</th>
+        <th>Created At</th>
         <th>State</th>
         <th>Actions</th>
     </tr>
@@ -16,14 +17,18 @@
     <tbody>
     <tr th:each="order : ${orders}">
         <td th:text="${order.id}"></td>
+        <td th:text="${order.createdAt}"> </td>
         <td th:text="${order.state}"></td>
         <td>
-            <form th:each="action : ${orderActions[order.id]}" th:action="@{/orders/{orderId}/{action}(orderId=${order.id}, action=${action})}" method="post">
-                <button type="submit" th:text="${#strings.capitalize(action)}"></button>
-            </form>
-            <form th:action="@{/orders/{orderId}/history(orderId=${order.id})}" method="get">
-                <button type="submit">View History</button>
-            </form>
+            <div style="display: inline-block">
+                <form th:each="action : ${orderActions[order.id]}"
+                      th:action="@{/orders/{orderId}/{action}(orderId=${order.id}, action=${action})}" method="post">
+                    <button type="submit" th:text="${#strings.capitalize(action)}"></button>
+                </form>
+                <form th:action="@{/orders/{orderId}/history(orderId=${order.id})}" method="get">
+                    <button type="submit">View History</button>
+                </form>
+            </div>
         </td>
     </tr>
     </tbody>

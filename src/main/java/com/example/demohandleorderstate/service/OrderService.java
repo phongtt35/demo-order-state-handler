@@ -7,14 +7,11 @@ import com.example.demohandleorderstate.model.OrderHistory;
 import com.example.demohandleorderstate.model.OrderState;
 import com.example.demohandleorderstate.repository.OrderHistoryRepository;
 import com.example.demohandleorderstate.repository.OrderRepository;
+import com.example.demohandleorderstate.strategy.StateTransitionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -24,7 +21,6 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderHistoryRepository orderHistoryRepository;
-    private final StateMachine<OrderState, OrderEvent> stateMachine;
     private final ApplicationEventPublisher eventPublisher;
 
     public List<Order> getAllOrders() {
@@ -64,6 +60,11 @@ public class OrderService {
     }
 
     @Transactional
+    public Order ghostOrder(Long orderId) {
+        return changeOrderState(orderId, OrderEvent.KHACH_BOM);
+    }
+
+    @Transactional
     public Order completeOrder(Long orderId) {
         return changeOrderState(orderId, OrderEvent.KHACH_NHAN);
     }
@@ -85,22 +86,20 @@ public class OrderService {
 
         // Set state machine context
         OrderState previousState = order.getState();
-        Message<OrderEvent> message = MessageBuilder.withPayload(orderEvent).build();
 
-        // Change state of order
-        stateMachine.startReactively().block();
-        stateMachine.sendEvent(Mono.just(message)).blockFirst();
-
-        // Save order
-        OrderState nextState = stateMachine.getState().getId();
+        // Get the new state after processing the event
+        OrderState nextState = StateTransitionHandler.handler(previousState, orderEvent);
         order.setState(nextState);
+
+        // Save updated order state
         orderRepository.save(order);
 
-        // Save order history
+        // Save order history for tracking state changes
         eventPublisher.publishEvent(new OrderStateChangedEvent(orderId, previousState, nextState));
 
         return order;
     }
+
 
     public List<OrderHistory> getOrderHistory(Long orderId) {
         return orderHistoryRepository.findByOrderId(orderId);
